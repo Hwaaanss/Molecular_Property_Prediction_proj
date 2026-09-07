@@ -1,0 +1,197 @@
+{
+  "study_name": "sider_gcn_no_fp_v4",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_and_fingerprint/dual_kd_gnn/optuna/sider_gcn_no_fp_v4/study.db",
+  "dataset": "sider",
+  "data_path": "/home/dioxide421/Dual_Branch_and_fingerprint/data/sider.csv",
+  "dataset_name": "sider",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "Hepatobiliary disorders",
+    "Metabolism and nutrition disorders",
+    "Product issues",
+    "Eye disorders",
+    "Investigations",
+    "Musculoskeletal and connective tissue disorders",
+    "Gastrointestinal disorders",
+    "Social circumstances",
+    "Immune system disorders",
+    "Reproductive system and breast disorders",
+    "Neoplasms benign, malignant and unspecified (incl cysts and polyps)",
+    "General disorders and administration site conditions",
+    "Endocrine disorders",
+    "Surgical and medical procedures",
+    "Vascular disorders",
+    "Blood and lymphatic system disorders",
+    "Skin and subcutaneous tissue disorders",
+    "Congenital, familial and genetic disorders",
+    "Infections and infestations",
+    "Respiratory, thoracic and mediastinal disorders",
+    "Psychiatric disorders",
+    "Renal and urinary disorders",
+    "Pregnancy, puerperium and perinatal conditions",
+    "Ear and labyrinth disorders",
+    "Cardiac disorders",
+    "Nervous system disorders",
+    "Injury, poisoning and procedural complications"
+  ],
+  "seed": 42,
+  "device": "cuda",
+  "search_space": {
+    "gnn_hidden": {
+      "type": "categorical",
+      "choices": [
+        128,
+        192,
+        256,
+        384
+      ]
+    },
+    "gnn_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "gnn_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5
+      ]
+    },
+    "fusion_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4
+      ]
+    },
+    "ih_rank": {
+      "type": "categorical",
+      "choices": [
+        16,
+        32,
+        64
+      ]
+    },
+    "ih_proj_dim": {
+      "type": "categorical",
+      "choices": [
+        0,
+        128,
+        256
+      ]
+    },
+    "ih_num_prototypes": {
+      "type": "categorical",
+      "choices": [
+        3,
+        4,
+        6,
+        8,
+        12
+      ]
+    },
+    "ih_assignment_mode": {
+      "type": "categorical",
+      "choices": [
+        "hard",
+        "soft",
+        "sparse"
+      ]
+    },
+    "ih_diversity_weight": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.1,
+      "log": true
+    },
+    "info_nce_temperature": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.5
+      ]
+    },
+    "fp_dim": {
+      "type": "categorical",
+      "choices": [
+        32,
+        64,
+        128
+      ]
+    },
+    "fp_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3
+      ]
+    },
+    "batch_size": {
+      "type": "categorical",
+      "choices": [
+        64,
+        128
+      ]
+    },
+    "head_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "weight_decay": {
+      "type": "float",
+      "low": 1e-06,
+      "high": 0.003,
+      "log": true
+    },
+    "pretrain_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "ema_decay": {
+      "type": "float",
+      "low": 0.95,
+      "high": 0.999
+    },
+    "ema_decay_init": {
+      "type": "categorical",
+      "choices": [
+        0.9,
+        0.95,
+        0.98,
+        0.99
+      ]
+    },
+    "distill_weight": {
+      "type": "float",
+      "low": 0.001,
+      "high": 0.2,
+      "log": true
+    },
+    "cross_distill_weight": {
+      "type": "categorical",
+      "choices": [
+        0.02,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "gnn_conv": "gcn",
+  "use_fingerprint": false,
+  "task_type": "classification",
+  "metric_name": "roc_auc",
+  "direction": "maximize"
+}

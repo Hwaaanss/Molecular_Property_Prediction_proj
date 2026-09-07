@@ -1,0 +1,294 @@
+"""Seed expansion to n=15 for statistical power (Reviewer Priority 1).
+
+Extends the existing 5-seed ablation study (150 runs) with 10 additional seeds
+across all 6 conditions and 5 datasets, bringing the total to 15 paired seeds
+per (condition, dataset) cell. This raises the theoretical Wilcoxon two-sided
+minimum p-value from 0.0625 (at n=5) to below 0.001 (at n=15), enabling
+conventional significance conclusions on the ablation deltas.
+
+Also runs the same 10 extra seeds on the full_model_random (matched-protocol)
+runs to enable Student-t 95% CIs at n=15 on SIDER/Tox21/ClinTox.
+
+Configuration
+  New seeds        : {100, 101, 102, 103, 104, 105, 106, 107, 108, 109}
+  Conditions       : full_model, a1_no_phys, a2_no_infonce, a3_no_mse_kd,
+                     a4_no_codebook, a5_linear_head
+  Datasets         : bace, bbbp, clintox, sider, tox21
+  Total new runs   : 6 conditions x 5 datasets x 10 seeds  = 300 (scaffold)
+                   + 1 condition  x 3 datasets x 10 seeds  =  30 (random split)
+                   = 330 runs
+  Estimated GPU    : ~5-10 days on a single A100 (Tox21 is the bottleneck)
+
+Split protocol
+  --split-type selects the protocol and, with it, the output subtree:
+      ablation/runs/<split_type>/<condition>/<dataset>_seed<N>/metrics.json
+  Default is deterministic_scaffold, the standard MoleculeNet protocol public
+  baselines report against. Each protocol writes to its own subtree, so results
+  from different protocols are never mixed or overwritten. The pre-refactor
+  label-aware results still sit at the flat ablation/runs/<condition>/... path
+  and are left untouched.
+
+Idempotency: existing metrics.json files are detected and skipped, so this
+script is safe to restart after interruption.
+
+Usage on server
+  conda activate dualgnn
+  nohup python -u scripts/seed_expansion.py > seed_expansion.log 2>&1 &
+  echo $! > seed_expansion.pid
+  tail -f seed_expansion.log
+
+  # Restart after interruption (idempotent):
+  nohup python -u scripts/seed_expansion.py > seed_expansion.log 2>&1 &
+
+  # A different protocol (writes to its own subtree):
+  python -u scripts/seed_expansion.py --split-type random_scaffold
+
+  # Progress: count of newly completed runs (target: 330)
+  find ablation/runs -name "metrics.json" -newer scripts/seed_expansion.py | wc -l
+
+After completion
+  1. Re-run ablation/main.py to regenerate ablation_summary.csv with n=15.
+  2. python scripts/revision_experiments.py --task c1 --split-type <split_type>
+  3. python scripts/compute_ci.py --split-type <split_type>
+"""
+from __future__ import annotations
+
+import argparse
+import json
+import sys
+import time
+from pathlib import Path
+
+import pandas as pd
+import torch
+
+PROJECT_ROOT = Path(__file__).resolve().parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
+
+from common.config import ablation_runs_root, set_seed, get_device  # noqa: E402
+from common.data import (  # noqa: E402
+    SPLIT_TYPES,
+    MoleculeDualDataset,
+    count_auc_defined_tasks,
+    count_positives,
+    split_indices,
+)
+from common.datasets import DATASETS, resolve_target_columns  # noqa: E402
+from common.trainer import Trainer  # noqa: E402
+from dual_kd_gnn.model import DualDistillationModel as Model  # noqa: E402
+
+# Configuration
+NEW_SEEDS = [100, 101, 102, 103, 104, 105, 106, 107, 108, 109]
+DATASETS_ALL = ["bace", "bbbp", "clintox", "sider", "tox21"]
+DATASETS_RANDOM = ["sider", "tox21", "clintox"]
+SCAFFOLD_SPLIT_TYPES = ("deterministic_scaffold", "random_scaffold", "label_aware_scaffold")
+RANDOM_RUNS_DIR = PROJECT_ROOT / "ablation" / "runs" / "full_model_random"
+
+# Per-ablation model_kwargs / hparams override lambdas.
+# Applied on top of the tuned best_config for each dataset.
+ABLATION_OVERRIDES = {
+    "full_model":       lambda m, h: (m, h),
+    "a1_no_phys":       lambda m, h: ({**m, "zero_phys_branch": True}, h),
+    "a2_no_infonce":    lambda m, h: (m, {**h, "cross_distill_weight": 0.0}),
+    "a3_no_mse_kd":     lambda m, h: (m, {**h, "distill_weight": 0.0}),
+    "a4_no_codebook":   lambda m, h: ({**m, "ih_num_prototypes": 0}, h),
+    "a5_linear_head":   lambda m, h: ({**m, "ih_rank": 0}, h),
+    "a12_no_phys_infonce":     lambda m, h: ({**m, "zero_phys_branch": True},
+                                             {**h, "cross_distill_weight": 0.0}),
+    "a14_no_phys_codebook":    lambda m, h: ({**m, "zero_phys_branch": True,
+                                              "ih_num_prototypes": 0}, h),
+    "a24_no_infonce_codebook": lambda m, h: ({**m, "ih_num_prototypes": 0},
+                                             {**h, "cross_distill_weight": 0.0}),
+    "a124_no_all_three":       lambda m, h: ({**m, "zero_phys_branch": True,
+                                              "ih_num_prototypes": 0},
+                                             {**h, "cross_distill_weight": 0.0}),
+}
+
+def load_best_config(dataset: str) -> dict:
+    p = PROJECT_ROOT / "dual_kd_gnn" / "optuna" / f"{dataset}_xkd" / "best_config.json"
+    return json.loads(p.read_text(encoding="utf-8"))
+
+
+def run_dir_for(split_type: str, condition: str, dataset: str, seed: int) -> Path:
+    return ablation_runs_root(split_type) / condition / f"{dataset}_seed{seed}"
+
+
+def train_one(
+    condition: str,
+    dataset: str,
+    seed: int,
+    split_type: str,
+    device: torch.device,
+    run_dir: Path | None = None,
+) -> dict:
+    """Train and save one (condition, dataset, seed, split_type) cell. Idempotent."""
+    if split_type not in SPLIT_TYPES:
+        raise ValueError(f"Unknown split_type '{split_type}'. Expected one of {SPLIT_TYPES}.")
+    if run_dir is None:
+        run_dir = run_dir_for(split_type, condition, dataset, seed)
+
+    metrics_path = run_dir / "metrics.json"
+    if metrics_path.exists():
+        return {"status": "skipped", "path": str(metrics_path)}
+
+    run_dir.mkdir(parents=True, exist_ok=True)
+    set_seed(seed)
+
+    spec = DATASETS[dataset]
+    data_path = str(spec.data_path())
+    target_columns = (
+        list(spec.target_columns) if spec.target_columns else resolve_target_columns(spec, data_path)
+    )
+    num_classes = len(target_columns)
+
+    dataframe = pd.read_csv(data_path)
+    train_idx, val_idx, test_idx = split_indices(
+        dataframe,
+        split_type=split_type,
+        target_columns=target_columns,
+        smiles_column=spec.smiles_column,
+        seed=seed,
+    )
+    print(
+        f"  split '{split_type}': train={len(train_idx)} val={len(val_idx)} test={len(test_idx)}  "
+        f"positives(test)={count_positives(dataframe, target_columns, test_idx)}",
+        flush=True,
+    )
+    train_ds = MoleculeDualDataset(data_path, target_columns, train_idx, smiles_column=spec.smiles_column)
+    val_ds = MoleculeDualDataset(data_path, target_columns, val_idx, smiles_column=spec.smiles_column)
+    test_ds = MoleculeDualDataset(data_path, target_columns, test_idx, smiles_column=spec.smiles_column)
+
+    best_config = load_best_config(dataset)
+    model_kwargs = dict(best_config["model_kwargs"])
+    hparams = dict(best_config["hparams"])
+    model_kwargs, hparams = ABLATION_OVERRIDES[condition](model_kwargs, hparams)
+
+    model = Model(num_classes=num_classes, **model_kwargs)
+    trainer = Trainer(
+        model=model,
+        train_dataset=train_ds,
+        val_dataset=val_ds,
+        device=device,
+        num_classes=num_classes,
+        **hparams,
+    )
+    t0 = time.time()
+    trainer.train()
+    test_auc = float(trainer.evaluate(test_ds, batch_size=int(hparams["batch_size"])))
+    elapsed = time.time() - t0
+
+    metrics = {
+        "ablation_name": condition,
+        "dataset_name": f"{dataset}_{condition}_{split_type}_seed{seed}",
+        "split_protocol": split_type,
+        "split_ratio": "80_10_10",
+        "target_columns": target_columns,
+        "num_targets": num_classes,
+        "n_train": len(train_idx),
+        "n_val": len(val_idx),
+        "n_test": len(test_idx),
+        "n_tasks_auc_defined_val": count_auc_defined_tasks(dataframe, target_columns, val_idx),
+        "n_tasks_auc_defined_test": count_auc_defined_tasks(dataframe, target_columns, test_idx),
+        "best_val_auc": float(trainer.best_val_auc),
+        "best_epoch": int(trainer.best_epoch),
+        "test_roc_auc": test_auc,
+        "num_parameters": int(sum(p.numel() for p in model.parameters())),
+        "uses_dual_features": True,
+        "elapsed_seconds": round(elapsed, 2),
+        "seed": seed,
+    }
+    metrics_path.write_text(json.dumps(metrics, indent=2))
+    return {"status": "done", "elapsed": elapsed, "test_auc": test_auc, "path": str(metrics_path)}
+
+
+def main() -> None:
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument("--seeds", nargs="+", type=int, default=NEW_SEEDS)
+    parser.add_argument("--datasets", nargs="+", default=DATASETS_ALL, choices=DATASETS_ALL)
+    parser.add_argument("--conditions", nargs="+",
+                        default=list(ABLATION_OVERRIDES.keys()),
+                        choices=list(ABLATION_OVERRIDES.keys()))
+    parser.add_argument("--device", default=None)
+    parser.add_argument("--split-type", default="deterministic_scaffold",
+                        choices=[*SPLIT_TYPES, "all"],
+                        help="Split protocol for the main sweep, or 'all' to run every "
+                             "protocol in turn. Default: deterministic_scaffold.")
+    parser.add_argument("--skip-scaffold", action="store_true",
+                        help="Skip the main sweep for scaffold-family protocols "
+                             f"({', '.join(SCAFFOLD_SPLIT_TYPES)}).")
+    parser.add_argument("--skip-random", action="store_true",
+                        help="Skip everything under the 'random' protocol: the main sweep "
+                             "when --split-type is random, and the matched-protocol "
+                             "full_model random comparison runs.")
+    args = parser.parse_args()
+
+    requested = list(SPLIT_TYPES) if args.split_type == "all" else [args.split_type]
+    sweep_split_types = [
+        split_type for split_type in requested
+        if not (args.skip_scaffold and split_type in SCAFFOLD_SPLIT_TYPES)
+        and not (args.skip_random and split_type == "random")
+    ]
+
+    device = get_device(args.device)
+    print(f"Device: {device}")
+    print(f"Seeds:  {args.seeds}")
+    print(f"Conditions:  {args.conditions}")
+    print(f"Datasets:    {args.datasets}")
+    print(f"Split types: {sweep_split_types or '(none — all skipped)'}")
+
+    total_target = len(sweep_split_types) * len(args.conditions) * len(args.datasets) * len(args.seeds)
+    random_datasets = [] if args.skip_random else [d for d in args.datasets if d in DATASETS_RANDOM]
+    total_target += len(random_datasets) * len(args.seeds)  # only full_model condition
+    print(f"Target new runs (upper bound; idempotent skips reduce actual work): {total_target}\n")
+
+    done = skipped = failed = 0
+
+    def record(tag: str, condition: str, dataset: str, seed: int, split_type: str,
+               run_dir: Path | None = None) -> None:
+        nonlocal done, skipped, failed
+        try:
+            result = train_one(condition, dataset, seed, split_type, device, run_dir=run_dir)
+        except Exception as e:
+            print(f"{tag} FAILED: {e}", flush=True)
+            failed += 1
+            return
+        if result["status"] == "skipped":
+            skipped += 1
+            print(f"{tag} skip (exists)", flush=True)
+        else:
+            done += 1
+            print(f"{tag} done  auc={result['test_auc']:.4f}  ({result['elapsed']/60:.1f} min)  "
+                  f"[{done+skipped}/{total_target}]", flush=True)
+
+    for split_type in sweep_split_types:
+        for condition in args.conditions:
+            for dataset in args.datasets:
+                for seed in args.seeds:
+                    record(f"[{split_type:22s}][{condition:16s}][{dataset:8s}][seed={seed:3d}]",
+                           condition, dataset, seed, split_type)
+
+    # Matched-protocol comparison against baselines that report random splits.
+    # Keeps its historical ablation/runs/full_model_random/ directory: that path
+    # has only ever held random-split runs, so it needs no protocol separation,
+    # and reusing it keeps the existing runs there idempotently skippable.
+    for dataset in random_datasets:
+        for seed in args.seeds:
+            record(f"[full_model_random     ][{'full_model':16s}][{dataset:8s}][seed={seed:3d}]",
+                   "full_model", dataset, seed, "random",
+                   run_dir=RANDOM_RUNS_DIR / f"{dataset}_seed{seed}")
+
+    print(f"\nSummary: done={done}, skipped={skipped}, failed={failed}, target={total_target}")
+    if done > 0:
+        primary = sweep_split_types[0] if sweep_split_types else "random"
+        print("\nNext steps:")
+        print("  1. Regenerate ablation_summary.csv:")
+        print("       python ablation/main.py")
+        print("  2. Re-run Wilcoxon tests with n=15:")
+        print(f"       python scripts/revision_experiments.py --task c1 --split-type {primary}")
+        print("  3. Recompute CIs:")
+        print(f"       python scripts/compute_ci.py --split-type {primary}")
+
+
+if __name__ == "__main__":
+    main()

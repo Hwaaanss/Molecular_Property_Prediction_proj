@@ -1,0 +1,230 @@
+{
+  "study_name": "freesolv_xkd",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/freesolv_xkd/study.db",
+  "dataset": "freesolv",
+  "data_path": "/home/dioxide421/Dual_Branch_DR/data/freesolv.csv",
+  "dataset_name": "freesolv",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "expt"
+  ],
+  "seed": 42,
+  "device": "cuda",
+  "search_space": {
+    "gnn_hidden": {
+      "type": "categorical",
+      "choices": [
+        128,
+        192,
+        256,
+        384
+      ]
+    },
+    "dim_ff_multiplier": {
+      "type": "categorical",
+      "choices": [
+        2,
+        3,
+        4
+      ]
+    },
+    "gnn_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "gnn_dropout": {
+      "type": "float",
+      "low": 0.1,
+      "high": 0.55
+    },
+    "nhead": {
+      "type": "categorical",
+      "choices": [
+        4,
+        8
+      ]
+    },
+    "tf_layers": {
+      "type": "int",
+      "low": 1,
+      "high": 3
+    },
+    "tf_dropout": {
+      "type": "float",
+      "low": 0.05,
+      "high": 0.45
+    },
+    "ih_rank": {
+      "type": "categorical",
+      "choices": [
+        16,
+        32,
+        64
+      ]
+    },
+    "ih_symmetric": {
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "ih_proj_dim": {
+      "type": "categorical",
+      "choices": [
+        0,
+        128,
+        256
+      ]
+    },
+    "ih_num_prototypes": {
+      "type": "categorical",
+      "choices": [
+        3,
+        4,
+        6,
+        8,
+        12
+      ]
+    },
+    "ih_assignment_mode": {
+      "type": "categorical",
+      "choices": [
+        "hard",
+        "soft",
+        "sparse"
+      ]
+    },
+    "ih_diversity_weight": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.1,
+      "log": true
+    },
+    "info_nce_temperature": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.5
+      ]
+    },
+    "batch_size": {
+      "type": "categorical",
+      "choices": [
+        64,
+        128
+      ]
+    },
+    "transformer_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "weight_decay": {
+      "type": "float",
+      "low": 1e-06,
+      "high": 0.003,
+      "log": true
+    },
+    "pretrain_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "ema_decay": {
+      "type": "float",
+      "low": 0.95,
+      "high": 0.999
+    },
+    "ema_decay_init": {
+      "type": "categorical",
+      "choices": [
+        0.9,
+        0.95,
+        0.98,
+        0.99
+      ]
+    },
+    "distill_weight": {
+      "type": "float",
+      "low": 0.001,
+      "high": 0.2,
+      "log": true
+    },
+    "cross_distill_weight": {
+      "type": "categorical",
+      "choices": [
+        0.02,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "task_type": "regression",
+  "metric_name": "rmse",
+  "direction": "minimize",
+  "best_trial_number": 3,
+  "best_value": 2.0088686959817696,
+  "best_params": {
+    "gnn_hidden": 192,
+    "dim_ff_multiplier": 3,
+    "gnn_layers": 2,
+    "gnn_dropout": 0.22539090890647517,
+    "nhead": 4,
+    "tf_layers": 1,
+    "tf_dropout": 0.24578110411102522,
+    "ih_rank": 16,
+    "ih_symmetric": true,
+    "ih_proj_dim": 0,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "sparse",
+    "ih_diversity_weight": 0.010781845035122271,
+    "info_nce_temperature": 0.2,
+    "transformer_lr": 0.00039643430816069464,
+    "batch_size": 128,
+    "weight_decay": 2.211697324503763e-05,
+    "pretrain_lr": 0.0020911913076641546,
+    "ema_decay": 0.9567385262631536,
+    "ema_decay_init": 0.98,
+    "distill_weight": 0.0039222152370481465,
+    "cross_distill_weight": 0.05
+  },
+  "model_kwargs": {
+    "gnn_hidden": 192,
+    "gnn_layers": 2,
+    "gnn_dropout": 0.22539090890647517,
+    "nhead": 4,
+    "tf_layers": 1,
+    "dim_ff": 576,
+    "tf_dropout": 0.24578110411102522,
+    "ih_rank": 16,
+    "ih_symmetric": true,
+    "ih_proj_dim": 0,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "sparse",
+    "ih_diversity_weight": 0.010781845035122271,
+    "info_nce_temperature": 0.2
+  },
+  "hparams": {
+    "batch_size": 128,
+    "lr": 0.00039643430816069464,
+    "weight_decay": 2.211697324503763e-05,
+    "num_epochs": 150,
+    "patience": 10,
+    "gcn_pretrain_epochs": 150,
+    "transformer_epochs": 150,
+    "pretrain_lr": 0.0020911913076641546,
+    "transformer_lr": 0.00039643430816069464,
+    "ema_decay": 0.9567385262631536,
+    "ema_decay_init": 0.98,
+    "distill_weight": 0.0039222152370481465,
+    "cross_distill_weight": 0.05
+  },
+  "metric": "best_val_metric",
+  "saved_at": "2026-08-10T13:44:02",
+  "replay_command": "python dual_kd_gnn/tune_optuna.py --replay-best /home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/freesolv_xkd/best_config.json"
+}

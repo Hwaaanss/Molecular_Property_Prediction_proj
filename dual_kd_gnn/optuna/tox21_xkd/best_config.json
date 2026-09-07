@@ -1,0 +1,237 @@
+{
+  "study_name": "tox21_xkd",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/tox21_xkd/study.db",
+  "dataset": "tox21",
+  "data_path": "/home/dioxide421/Dual_Branch_DR/data/tox21.csv",
+  "dataset_name": "tox21",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "NR-AR",
+    "NR-AR-LBD",
+    "NR-AhR",
+    "NR-Aromatase",
+    "NR-ER",
+    "NR-ER-LBD",
+    "NR-PPAR-gamma",
+    "SR-ARE",
+    "SR-ATAD5",
+    "SR-HSE",
+    "SR-MMP",
+    "SR-p53"
+  ],
+  "seed": 42,
+  "device": "cuda",
+  "search_space": {
+    "gnn_hidden": {
+      "type": "categorical",
+      "choices": [
+        128,
+        192,
+        256,
+        384,
+        512
+      ]
+    },
+    "dim_ff_multiplier": {
+      "type": "categorical",
+      "choices": [
+        2,
+        3,
+        4
+      ]
+    },
+    "gnn_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "gnn_dropout": {
+      "type": "float",
+      "low": 0.1,
+      "high": 0.55
+    },
+    "nhead": {
+      "type": "categorical",
+      "choices": [
+        4,
+        8
+      ]
+    },
+    "tf_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "tf_dropout": {
+      "type": "float",
+      "low": 0.2,
+      "high": 0.5
+    },
+    "ih_rank": {
+      "type": "categorical",
+      "choices": [
+        16,
+        32,
+        64
+      ]
+    },
+    "ih_symmetric": {
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "ih_proj_dim": {
+      "type": "categorical",
+      "choices": [
+        128,
+        256
+      ]
+    },
+    "ih_num_prototypes": {
+      "type": "categorical",
+      "choices": [
+        8,
+        12,
+        16,
+        24
+      ]
+    },
+    "ih_assignment_mode": {
+      "type": "categorical",
+      "choices": [
+        "hard",
+        "soft",
+        "sparse"
+      ]
+    },
+    "ih_diversity_weight": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.1,
+      "log": true
+    },
+    "info_nce_temperature": {
+      "type": "categorical",
+      "choices": [
+        0.2,
+        0.5,
+        1.0
+      ]
+    },
+    "batch_size": {
+      "type": "categorical",
+      "choices": [
+        64,
+        128
+      ]
+    },
+    "transformer_lr": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.002,
+      "log": true
+    },
+    "weight_decay": {
+      "type": "float",
+      "low": 1e-06,
+      "high": 0.003,
+      "log": true
+    },
+    "pretrain_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "ema_decay": {
+      "type": "float",
+      "low": 0.97,
+      "high": 0.999
+    },
+    "ema_decay_init": {
+      "type": "categorical",
+      "choices": [
+        0.9,
+        0.95,
+        0.98,
+        0.99
+      ]
+    },
+    "distill_weight": {
+      "type": "float",
+      "low": 0.0005,
+      "high": 0.05,
+      "log": true
+    },
+    "cross_distill_weight": {
+      "type": "categorical",
+      "choices": [
+        0.02,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "best_trial_number": 12,
+  "best_value": 0.8327117774753018,
+  "best_params": {
+    "gnn_hidden": 256,
+    "dim_ff_multiplier": 2,
+    "gnn_layers": 4,
+    "gnn_dropout": 0.4571400587729837,
+    "nhead": 8,
+    "tf_layers": 2,
+    "tf_dropout": 0.21789423523129384,
+    "ih_rank": 32,
+    "ih_symmetric": false,
+    "ih_proj_dim": 256,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "sparse",
+    "ih_diversity_weight": 0.0004207044462268102,
+    "info_nce_temperature": 0.2,
+    "transformer_lr": 0.0002564878857490007,
+    "batch_size": 64,
+    "weight_decay": 0.00017774130812656848,
+    "pretrain_lr": 0.001126491513792064,
+    "ema_decay": 0.9884183738563591,
+    "ema_decay_init": 0.95,
+    "distill_weight": 0.04596991406126452,
+    "cross_distill_weight": 0.05
+  },
+  "model_kwargs": {
+    "gnn_hidden": 256,
+    "gnn_layers": 4,
+    "gnn_dropout": 0.4571400587729837,
+    "nhead": 8,
+    "tf_layers": 2,
+    "dim_ff": 512,
+    "tf_dropout": 0.21789423523129384,
+    "ih_rank": 32,
+    "ih_symmetric": false,
+    "ih_proj_dim": 256,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "sparse",
+    "ih_diversity_weight": 0.0004207044462268102,
+    "info_nce_temperature": 0.2
+  },
+  "hparams": {
+    "batch_size": 64,
+    "lr": 0.0002564878857490007,
+    "weight_decay": 0.00017774130812656848,
+    "num_epochs": 150,
+    "patience": 10,
+    "gcn_pretrain_epochs": 150,
+    "transformer_epochs": 150,
+    "pretrain_lr": 0.001126491513792064,
+    "transformer_lr": 0.0002564878857490007,
+    "ema_decay": 0.9884183738563591,
+    "ema_decay_init": 0.95,
+    "distill_weight": 0.04596991406126452,
+    "cross_distill_weight": 0.05
+  },
+  "metric": "best_val_auc",
+  "saved_at": "2026-06-24T11:55:51",
+  "replay_command": "python dual_kd_gnn/tune_optuna.py --replay-best /home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/tox21_xkd/best_config.json"
+}

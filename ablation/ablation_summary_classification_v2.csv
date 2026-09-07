@@ -1,0 +1,19 @@
+split_protocol,ablation,dataset,task_type,metric_name,n_seeds,seeds,mean_test_metric,std_test_metric,mean_best_val_metric,per_seed_metrics,config_source,gnn_conv,zero_phys_branch,distill_weight,cross_distill_weight,ih_rank,ih_num_prototypes,use_fingerprint,fp_stage,ih_block_proj
+scaffold,gat_full_model,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.788,0.0122,0.7039,"[0.8027, 0.7995, 0.7796, 0.7822, 0.776]",optuna_tuned,gat,False,0.0011950712075118732,0.05,64,4,True,head,True
+scaffold,gat_full_model,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.7094,0.0182,0.9466,"[0.6883, 0.7249, 0.7192, 0.6909, 0.7234]",optuna_tuned,gat,False,0.00171889612665269,0.05,32,4,True,head,True
+scaffold,gat_full_model,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6105,0.0133,0.6095,"[0.6138, 0.6199, 0.5956, 0.6255, 0.5978]",optuna_tuned,gat,False,0.018853289942275565,0.1,32,4,True,head,True
+scaffold,gat_no_fp,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6831,0.0133,0.5797,"[0.6958, 0.6775, 0.6989, 0.6712, 0.6721]",optuna_tuned,gat,False,0.0011950712075118732,0.05,64,4,False,head,True
+scaffold,gat_no_fp,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6905,0.0043,0.9308,"[0.6943, 0.6955, 0.6894, 0.6857, 0.6876]",optuna_tuned,gat,False,0.00171889612665269,0.05,32,4,False,head,True
+scaffold,gat_no_fp,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6317,0.0082,0.5488,"[0.6231, 0.6272, 0.6322, 0.6312, 0.6449]",optuna_tuned,gat,False,0.018853289942275565,0.1,32,4,False,head,True
+scaffold,gcn_full_model,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.775,0.0151,0.7131,"[0.7962, 0.7644, 0.7721, 0.7587, 0.7837]",optuna_tuned,gcn,False,0.0011950712075118732,0.05,64,4,True,head,True
+scaffold,gcn_full_model,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6985,0.0283,0.945,"[0.7202, 0.6712, 0.7364, 0.6788, 0.6857]",optuna_tuned,gcn,False,0.00171889612665269,0.05,32,4,True,head,True
+scaffold,gcn_full_model,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6126,0.0171,0.5985,"[0.614, 0.6189, 0.602, 0.5917, 0.6365]",optuna_tuned,gcn,False,0.018853289942275565,0.1,32,4,True,head,True
+scaffold,gcn_no_fp,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6917,0.0264,0.5689,"[0.7058, 0.6806, 0.7236, 0.6949, 0.6536]",optuna_tuned,gcn,False,0.0011950712075118732,0.05,64,4,False,head,True
+scaffold,gcn_no_fp,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6798,0.0062,0.9359,"[0.6868, 0.6775, 0.671, 0.6842, 0.6795]",optuna_tuned,gcn,False,0.00171889612665269,0.05,32,4,False,head,True
+scaffold,gcn_no_fp,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6265,0.0052,0.5379,"[0.6299, 0.6277, 0.6224, 0.6325, 0.62]",optuna_tuned,gcn,False,0.018853289942275565,0.1,32,4,False,head,True
+scaffold,gine_full_model,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.7484,0.0462,0.6268,"[0.7678, 0.7534, 0.6737, 0.7988, 0.7479]",optuna_tuned,gine,False,0.0011950712075118732,0.05,64,4,True,head,True
+scaffold,gine_full_model,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6878,0.0229,0.9426,"[0.7014, 0.7094, 0.6526, 0.6982, 0.6776]",optuna_tuned,gine,False,0.00171889612665269,0.05,32,4,True,head,True
+scaffold,gine_full_model,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6092,0.0093,0.5939,"[0.622, 0.6003, 0.6156, 0.6018, 0.6062]",optuna_tuned,gine,False,0.018853289942275565,0.1,32,4,True,head,True
+scaffold,gine_no_fp,bace,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.7411,0.0219,0.5527,"[0.7445, 0.7091, 0.748, 0.7346, 0.7692]",optuna_tuned,gine,False,0.0011950712075118732,0.05,64,4,False,head,True
+scaffold,gine_no_fp,bbbp,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6524,0.013,0.9252,"[0.6397, 0.6547, 0.6568, 0.64, 0.6706]",optuna_tuned,gine,False,0.00171889612665269,0.05,32,4,False,head,True
+scaffold,gine_no_fp,sider,classification,roc_auc,5,"[0, 1, 2, 3, 42]",0.6166,0.0069,0.5718,"[0.6196, 0.6195, 0.6104, 0.6086, 0.6251]",optuna_tuned,gine,False,0.018853289942275565,0.1,32,4,False,head,True

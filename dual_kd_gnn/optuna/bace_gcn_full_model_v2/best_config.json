@@ -1,0 +1,235 @@
+{
+  "study_name": "bace_gcn_full_model_v2",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_and_fingerprint/dual_kd_gnn/optuna/bace_gcn_full_model_v2/study.db",
+  "dataset": "bace",
+  "data_path": "/home/dioxide421/Dual_Branch_and_fingerprint/data/bace.csv",
+  "dataset_name": "bace",
+  "smiles_column": "mol",
+  "target_columns": [
+    "Class"
+  ],
+  "seed": 42,
+  "device": "cuda",
+  "search_space": {
+    "gnn_hidden": {
+      "type": "categorical",
+      "choices": [
+        256,
+        384,
+        512
+      ]
+    },
+    "gnn_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "gnn_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5
+      ]
+    },
+    "fusion_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4
+      ]
+    },
+    "ih_rank": {
+      "type": "categorical",
+      "choices": [
+        16,
+        32,
+        64
+      ]
+    },
+    "ih_symmetric": {
+      "type": "categorical",
+      "choices": [
+        true,
+        false
+      ]
+    },
+    "ih_proj_dim": {
+      "type": "categorical",
+      "choices": [
+        0,
+        128
+      ]
+    },
+    "ih_num_prototypes": {
+      "type": "categorical",
+      "choices": [
+        4,
+        6,
+        8
+      ]
+    },
+    "ih_assignment_mode": {
+      "type": "categorical",
+      "choices": [
+        "hard",
+        "soft",
+        "sparse"
+      ]
+    },
+    "ih_diversity_weight": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.1,
+      "log": true
+    },
+    "info_nce_temperature": {
+      "type": "categorical",
+      "choices": [
+        0.2,
+        0.5,
+        1.0
+      ]
+    },
+    "fp_dim": {
+      "type": "categorical",
+      "choices": [
+        32,
+        64,
+        128
+      ]
+    },
+    "fp_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3
+      ]
+    },
+    "batch_size": {
+      "type": "categorical",
+      "choices": [
+        64,
+        128
+      ]
+    },
+    "head_lr": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.002,
+      "log": true
+    },
+    "weight_decay": {
+      "type": "float",
+      "low": 1e-06,
+      "high": 0.003,
+      "log": true
+    },
+    "pretrain_lr": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.002,
+      "log": true
+    },
+    "ema_decay": {
+      "type": "float",
+      "low": 0.95,
+      "high": 0.999
+    },
+    "ema_decay_init": {
+      "type": "categorical",
+      "choices": [
+        0.9,
+        0.95,
+        0.98,
+        0.99
+      ]
+    },
+    "distill_weight": {
+      "type": "float",
+      "low": 0.001,
+      "high": 0.2,
+      "log": true
+    },
+    "cross_distill_weight": {
+      "type": "categorical",
+      "choices": [
+        0.02,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "gnn_conv": "gcn",
+  "use_fingerprint": true,
+  "task_type": "classification",
+  "metric_name": "roc_auc",
+  "direction": "maximize",
+  "best_trial_number": 3,
+  "best_value": 0.7356076759061834,
+  "best_params": {
+    "gnn_hidden": 384,
+    "gnn_layers": 4,
+    "gnn_dropout": 0.1,
+    "fusion_dropout": 0.3,
+    "ih_rank": 64,
+    "ih_symmetric": true,
+    "ih_proj_dim": 0,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "soft",
+    "ih_diversity_weight": 0.0010548702714918063,
+    "info_nce_temperature": 0.5,
+    "fp_dim": 128,
+    "fp_dropout": 0.1,
+    "head_lr": 0.0001321689663674613,
+    "batch_size": 128,
+    "weight_decay": 0.0001589902650976323,
+    "pretrain_lr": 0.000276113682141202,
+    "ema_decay": 0.9671112691560203,
+    "ema_decay_init": 0.95,
+    "distill_weight": 0.03001470477357818,
+    "cross_distill_weight": 0.1
+  },
+  "model_kwargs": {
+    "gnn_hidden": 384,
+    "gnn_layers": 4,
+    "gnn_dropout": 0.1,
+    "fusion_dropout": 0.3,
+    "ih_rank": 64,
+    "ih_symmetric": true,
+    "ih_proj_dim": 0,
+    "ih_num_prototypes": 8,
+    "ih_assignment_mode": "soft",
+    "ih_diversity_weight": 0.0010548702714918063,
+    "info_nce_temperature": 0.5,
+    "gnn_conv": "gcn",
+    "ih_block_proj": true,
+    "use_fingerprint": true,
+    "fp_dim": 128,
+    "fp_dropout": 0.1
+  },
+  "hparams": {
+    "batch_size": 128,
+    "lr": 0.0001321689663674613,
+    "weight_decay": 0.0001589902650976323,
+    "num_epochs": 150,
+    "patience": 10,
+    "gcn_pretrain_epochs": 150,
+    "head_epochs": 150,
+    "pretrain_lr": 0.000276113682141202,
+    "head_lr": 0.0001321689663674613,
+    "ema_decay": 0.9671112691560203,
+    "ema_decay_init": 0.95,
+    "distill_weight": 0.03001470477357818,
+    "cross_distill_weight": 0.1
+  },
+  "metric": "best_val_metric",
+  "saved_at": "2026-08-19T18:17:11",
+  "replay_command": "python dual_kd_gnn/tune_optuna.py --replay-best /home/dioxide421/Dual_Branch_and_fingerprint/dual_kd_gnn/optuna/bace_gcn_full_model_v2/best_config.json"
+}

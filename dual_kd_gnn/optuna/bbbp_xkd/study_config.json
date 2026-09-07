@@ -1,0 +1,13 @@
+{
+  "study_name": "bbbp_xkd",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/bbbp_xkd/study.db",
+  "dataset": "bbbp",
+  "data_path": "/home/dioxide421/Dual_Branch_DR/data/bbbp.csv",
+  "dataset_name": "bbbp",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "p_np"
+  ],
+  "seed": 42,
+  "device": "cuda"
+}

@@ -1,0 +1,116 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="860" viewBox="0 0 1400 860">
+  <style>
+    .title { font: 700 28px Arial, sans-serif; fill: #111; }
+    .subtitle { font: 600 18px Arial, sans-serif; fill: #333; }
+    .label { font: 500 15px Arial, sans-serif; fill: #222; }
+    .small { font: 400 13px Arial, sans-serif; fill: #444; }
+    .box { fill: #f8fafc; stroke: #334155; stroke-width: 2; rx: 12; ry: 12; }
+    .phase { fill: #eef2ff; stroke: #4f46e5; stroke-width: 2; rx: 16; ry: 16; }
+    .teacher { fill: #ecfeff; stroke: #0891b2; stroke-width: 2; rx: 12; ry: 12; }
+    .student { fill: #fefce8; stroke: #ca8a04; stroke-width: 2; rx: 12; ry: 12; }
+    .final { fill: #f0fdf4; stroke: #16a34a; stroke-width: 2; rx: 12; ry: 12; }
+    .arrow { stroke: #475569; stroke-width: 2.5; fill: none; marker-end: url(#arrow); }
+    .dashed { stroke-dasharray: 8 6; }
+  </style>
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L0,6 L9,3 z" fill="#475569"/>
+    </marker>
+  </defs>
+
+  <text x="40" y="44" class="title">Double_GCN_Transformer — A 구조</text>
+  <text x="40" y="72" class="small">Phase 1: student는 EMA teacher와의 차이만 줄이도록 학습 / Phase 2: 성장한 teacher만 Transformer 이후 경로에 사용</text>
+
+  <rect x="30" y="100" width="1340" height="280" class="phase"/>
+  <text x="50" y="132" class="subtitle">Phase 1. Online EMA self-distillation only</text>
+
+  <rect x="60" y="170" width="220" height="70" class="box"/>
+  <text x="82" y="200" class="label">Input graph</text>
+  <text x="82" y="224" class="small">x_phys, x_chem, edge_index, edge_attr</text>
+
+  <rect x="330" y="150" width="220" height="70" class="student"/>
+  <text x="355" y="180" class="label">Student GCN_p</text>
+  <text x="355" y="204" class="small">학습되는 branch encoder</text>
+
+  <rect x="330" y="240" width="220" height="70" class="student"/>
+  <text x="355" y="270" class="label">Student GCN_c</text>
+  <text x="355" y="294" class="small">학습되는 branch encoder</text>
+
+  <rect x="620" y="150" width="240" height="70" class="teacher"/>
+  <text x="646" y="180" class="label">Teacher GCN_p (EMA)</text>
+  <text x="646" y="204" class="small">student GCN_p의 online EMA</text>
+
+  <rect x="620" y="240" width="240" height="70" class="teacher"/>
+  <text x="646" y="270" class="label">Teacher GCN_c (EMA)</text>
+  <text x="646" y="294" class="small">student GCN_c의 online EMA</text>
+
+  <rect x="930" y="160" width="220" height="140" class="box"/>
+  <text x="955" y="192" class="label">Padding + masked MSE</text>
+  <text x="955" y="220" class="small">student_phys_seq vs teacher_phys_seq</text>
+  <text x="955" y="244" class="small">student_chem_seq vs teacher_chem_seq</text>
+  <text x="955" y="284" class="small">distillation loss만 사용</text>
+
+  <rect x="1190" y="190" width="140" height="70" class="teacher"/>
+  <text x="1215" y="220" class="label">EMA update</text>
+  <text x="1207" y="244" class="small">teacher ← EMA(student)</text>
+
+  <path d="M280 205 L330 185" class="arrow"/>
+  <path d="M280 205 L330 275" class="arrow"/>
+  <path d="M550 185 L620 185" class="arrow"/>
+  <path d="M550 275 L620 275" class="arrow"/>
+  <path d="M550 185 L930 195" class="arrow"/>
+  <path d="M550 275 L930 245" class="arrow"/>
+  <path d="M860 185 L930 220" class="arrow dashed"/>
+  <path d="M860 275 L930 260" class="arrow dashed"/>
+  <path d="M1150 230 L1190 225" class="arrow"/>
+  <path d="M1260 190 C1260 140, 760 110, 470 110 C390 110, 360 120, 360 145" class="arrow dashed"/>
+  <path d="M1260 260 C1260 320, 760 350, 470 350 C390 350, 360 330, 360 305" class="arrow dashed"/>
+
+  <text x="990" y="338" class="small">Phase 1에서는 student pooling / classifier를 사용하지 않음</text>
+
+  <rect x="30" y="420" width="1340" height="360" class="phase"/>
+  <text x="50" y="452" class="subtitle">Phase 2. Grown EMA teacher only</text>
+
+  <rect x="60" y="500" width="220" height="70" class="box"/>
+  <text x="82" y="530" class="label">Input graph</text>
+  <text x="82" y="554" class="small">same graph batch</text>
+
+  <rect x="330" y="480" width="220" height="70" class="teacher"/>
+  <text x="355" y="510" class="label">Teacher GCN_p</text>
+  <text x="355" y="534" class="small">phase 1에서 성장한 EMA teacher</text>
+
+  <rect x="330" y="570" width="220" height="70" class="teacher"/>
+  <text x="355" y="600" class="label">Teacher GCN_c</text>
+  <text x="355" y="624" class="small">phase 1에서 성장한 EMA teacher</text>
+
+  <rect x="620" y="480" width="220" height="70" class="box"/>
+  <text x="646" y="510" class="label">Transformer Encoder_p</text>
+  <text x="646" y="534" class="small">single branch encoder</text>
+
+  <rect x="620" y="570" width="220" height="70" class="box"/>
+  <text x="646" y="600" class="label">Transformer Encoder_c</text>
+  <text x="646" y="624" class="small">single branch encoder</text>
+
+  <rect x="910" y="525" width="180" height="70" class="final"/>
+  <text x="970" y="555" class="label">Concat</text>
+  <text x="935" y="579" class="small">[phys_seq, chem_seq]</text>
+
+  <rect x="1140" y="525" width="180" height="70" class="final"/>
+  <text x="1173" y="555" class="label">Masked mean pooling</text>
+  <text x="1168" y="579" class="small">padding-safe</text>
+
+  <rect x="1140" y="635" width="180" height="70" class="final"/>
+  <text x="1196" y="665" class="label">Classifier</text>
+  <text x="1170" y="689" class="small">InteractionTensorHead</text>
+
+  <path d="M280 535 L330 515" class="arrow"/>
+  <path d="M280 535 L330 605" class="arrow"/>
+  <path d="M550 515 L620 515" class="arrow"/>
+  <path d="M550 605 L620 605" class="arrow"/>
+  <path d="M840 515 L910 550" class="arrow"/>
+  <path d="M840 605 L910 570" class="arrow"/>
+  <path d="M1090 560 L1140 560" class="arrow"/>
+  <path d="M1230 595 L1230 635" class="arrow"/>
+
+  <text x="60" y="750" class="small">요약: phase 1은 student가 EMA teacher를 따라가도록 distillation-only로 학습되고, phase 2와 최종 추론은 성장한 teacher GCN만 사용합니다.</text>
+</svg>

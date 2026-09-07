@@ -1,0 +1,52 @@
+# DiKAT environment — conda only, one channel.
+#
+# Create it inside the project rather than in base:
+#
+#     conda env create --prefix ./envs/dikat -f environment.yml
+#     conda activate ./envs/dikat
+#
+# There is deliberately no `name:` key. `conda env create` refuses to take a
+# name from the file and a --prefix on the command line at the same time, and
+# the prefix is the point here.
+#
+# Everything comes from conda-forge, including PyTorch. Mixing the `pytorch`
+# and `conda-forge` channels is the usual way these environments become
+# unsolvable: the two channels build against different CUDA and MKL packages,
+# and the solver picks a working set from each that does not work together.
+# `pytorch-gpu` is conda-forge's metapackage that pulls the CUDA build.
+#
+# The CUDA runtime is installed by conda, so only the host NVIDIA driver has to
+# be new enough (RTX 3090 = compute capability 8.6; any driver that supports
+# CUDA 12 is fine). Nothing here needs a system CUDA toolkit.
+#
+# For a CPU-only box, swap `pytorch-gpu` for `pytorch-cpu`.
+
+channels:
+  - conda-forge
+  - nodefaults          # never fall through to the anaconda default channel
+
+dependencies:
+  - python=3.11
+
+  # --- deep learning -------------------------------------------------------
+  - pytorch-gpu=2.*     # conda-forge metapackage -> CUDA build of pytorch
+  - pytorch_geometric>=2.5
+  # torch-scatter / torch-sparse are NOT needed: this code only uses GCNConv,
+  # GINEConv, GATConv and global_mean_pool, which PyG 2.x implements with
+  # native torch scatter ops. Those two packages are the usual reason a PyG
+  # install has to fall back to pip wheels, and skipping them is what keeps
+  # this environment installable with conda alone.
+
+  # --- chemistry -----------------------------------------------------------
+  - rdkit>=2023.09      # conformer embedding (ETKDG), MMFF94, fingerprints
+
+  # --- numerics, data, tuning ----------------------------------------------
+  - numpy>=1.24
+  - pandas>=2.0
+  - scipy>=1.11         # scipy.stats.wilcoxon, used by the significance tests
+  - scikit-learn>=1.3   # roc_auc_score
+  - optuna>=3.4
+
+  # --- figures -------------------------------------------------------------
+  - matplotlib-base>=3.7  # -base: no unused Qt/Tk GUI stack, the code uses Agg
+  - pillow>=10.0          # only needed if DIKAT_FIGURE_FORMATS includes tiff

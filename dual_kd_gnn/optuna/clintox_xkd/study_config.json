@@ -1,0 +1,14 @@
+{
+  "study_name": "clintox_xkd",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_DR/dual_kd_gnn/optuna/clintox_xkd/study.db",
+  "dataset": "clintox",
+  "data_path": "/home/dioxide421/Dual_Branch_DR/data/clintox.csv",
+  "dataset_name": "clintox",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "FDA_APPROVED",
+    "CT_TOX"
+  ],
+  "seed": 42,
+  "device": "cuda"
+}

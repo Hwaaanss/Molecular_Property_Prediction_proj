@@ -1,0 +1,171 @@
+{
+  "study_name": "bbbp_gcn_no_fp_v3",
+  "storage": "sqlite:////home/dioxide421/Dual_Branch_and_fingerprint/dual_kd_gnn/optuna/bbbp_gcn_no_fp_v3/study.db",
+  "dataset": "bbbp",
+  "data_path": "/home/dioxide421/Dual_Branch_and_fingerprint/data/bbbp.csv",
+  "dataset_name": "bbbp",
+  "smiles_column": "smiles",
+  "target_columns": [
+    "p_np"
+  ],
+  "seed": 42,
+  "device": "cuda",
+  "search_space": {
+    "gnn_hidden": {
+      "type": "categorical",
+      "choices": [
+        128,
+        192,
+        256,
+        384
+      ]
+    },
+    "gnn_layers": {
+      "type": "int",
+      "low": 2,
+      "high": 4
+    },
+    "gnn_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3,
+        0.4,
+        0.5
+      ]
+    },
+    "fusion_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.0,
+        0.1,
+        0.2,
+        0.3,
+        0.4
+      ]
+    },
+    "ih_rank": {
+      "type": "categorical",
+      "choices": [
+        16,
+        32,
+        64
+      ]
+    },
+    "ih_proj_dim": {
+      "type": "categorical",
+      "choices": [
+        0,
+        128,
+        256
+      ]
+    },
+    "ih_num_prototypes": {
+      "type": "categorical",
+      "choices": [
+        3,
+        4,
+        6,
+        8,
+        12
+      ]
+    },
+    "ih_assignment_mode": {
+      "type": "categorical",
+      "choices": [
+        "hard",
+        "soft",
+        "sparse"
+      ]
+    },
+    "ih_diversity_weight": {
+      "type": "float",
+      "low": 0.0001,
+      "high": 0.1,
+      "log": true
+    },
+    "info_nce_temperature": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.5
+      ]
+    },
+    "fp_dim": {
+      "type": "categorical",
+      "choices": [
+        32,
+        64,
+        128
+      ]
+    },
+    "fp_dropout": {
+      "type": "categorical",
+      "choices": [
+        0.1,
+        0.2,
+        0.3
+      ]
+    },
+    "batch_size": {
+      "type": "categorical",
+      "choices": [
+        64,
+        128
+      ]
+    },
+    "head_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "weight_decay": {
+      "type": "float",
+      "low": 1e-06,
+      "high": 0.003,
+      "log": true
+    },
+    "pretrain_lr": {
+      "type": "float",
+      "low": 1e-05,
+      "high": 0.003,
+      "log": true
+    },
+    "ema_decay": {
+      "type": "float",
+      "low": 0.95,
+      "high": 0.999
+    },
+    "ema_decay_init": {
+      "type": "categorical",
+      "choices": [
+        0.9,
+        0.95,
+        0.98,
+        0.99
+      ]
+    },
+    "distill_weight": {
+      "type": "float",
+      "low": 0.001,
+      "high": 0.2,
+      "log": true
+    },
+    "cross_distill_weight": {
+      "type": "categorical",
+      "choices": [
+        0.02,
+        0.05,
+        0.1
+      ]
+    }
+  },
+  "gnn_conv": "gcn",
+  "use_fingerprint": false,
+  "task_type": "classification",
+  "metric_name": "roc_auc",
+  "direction": "maximize"
+}
