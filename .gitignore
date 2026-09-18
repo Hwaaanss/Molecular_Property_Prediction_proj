@@ -58,7 +58,7 @@ dual_kd_gnn/optuna/*/trials/
 
 # Single-run artifacts and generated tables/figures.
 dual_kd_gnn/runs/
-results/artifacts/
+# results/artifacts/
 
 # Process id written by the pipeline launcher.
 *.pid
